@@ -1,4 +1,4 @@
-# 🛡️ AI Code Reviewer Agent
+#  AI Code Reviewer Agent
 
 [![Java 21](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 [![LangChain4j](https://img.shields.io/badge/Framework-LangChain4j-blue.svg)](https://github.com/langchain4j/langchain4j)
@@ -11,7 +11,7 @@ Designed for monolithic codebases, it features a **stateful sliding-window chunk
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 The application follows clean architectural separation, isolating the AI service and retrieval layers from core engine execution.
 
@@ -33,18 +33,18 @@ graph TD
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
-1. **🧠 RAG-Powered Organizational Compliance:** Ingests internal coding standards (`Standards.txt`) into an in-memory vector store using **Google Gemini `text-embedding-004`**, injecting only the most relevant rules per code segment.
-2. **🪟 Overlapping Sliding-Window Engine:** Segments monolithic source files (>10,000 lines) into manageable windows (e.g. 20 lines with 5 lines overlap), eliminating context window overflow while preserving cross-line context.
-3. **🔍 Cross-Boundary Issue Deduplication:** Normalizes and filters duplicate violations that occur across chunk overlap boundaries, ensuring clean audit reports.
-4. **📊 Token Overhead Metrics:** Tracks and reports token footprint reductions (~35% savings) achieved through chunked RAG retrieval vs. whole-file monolithic ingestion.
-5. **⚡ Hybrid AI Inference:** Pairs Google Gemini vector embeddings for semantic search with **Groq (Llama 3.3 70B)** for sub-second, structured JSON schema generation.
-6. **⚙️ Flexible Dual-Tier Configuration:** Supports **Environment Variables** (CI/CD friendly) with automatic fallback to **`application.properties`** (local development friendly).
+1. **RAG-Powered Organizational Compliance:** Ingests internal coding standards (`Standards.txt`) into an in-memory vector store using **Google Gemini `text-embedding-004`**, injecting only the most relevant rules per code segment.
+2. **Overlapping Sliding-Window Engine:** Segments monolithic source files (>10,000 lines) into manageable windows (e.g. 20 lines with 5 lines overlap), eliminating context window overflow while preserving cross-line context.
+3. **Cross-Boundary Issue Deduplication:** Normalizes and filters duplicate violations that occur across chunk overlap boundaries, ensuring clean audit reports.
+4. **Token Overhead Metrics:** Tracks and reports token footprint reductions (~35% savings) achieved through chunked RAG retrieval vs. whole-file monolithic ingestion.
+5. **Hybrid AI Inference:** Pairs Google Gemini vector embeddings for semantic search with **Groq (Llama 3.3 70B)** for sub-second, structured JSON schema generation.
+6. **Flexible Dual-Tier Configuration:** Supports **Environment Variables** (CI/CD friendly) with automatic fallback to **`application.properties`** (local development friendly).
 
 ---
 
-## 🛠️ Project Structure
+##  Project Structure
 
 ```text
 src/main
@@ -63,7 +63,7 @@ src/main
 
 ---
 
-## ⚙️ Setup & Configuration
+##  Setup & Configuration
 
 ### Prerequisites
 * **Java 21 (JDK)**
@@ -134,39 +134,39 @@ mvn exec:java "-Dexec.mainClass=org.example.reviewer.TokenBenchmarkDemo"
 
 ---
 
-## 📋 Sample Output
+##  Sample Output
 
 ```text
 =======================================================
- 🛡️  AI Code Reviewer - Enterprise Compliance Agent
+   AI Code Reviewer - Enterprise Compliance Agent
 =======================================================
-📚 [RAG] Ingesting Company Standards...
-🤖 [AI] Connecting to Groq (Llama 3.3)...
-🚀 [Engine] Starting analysis for: BadCode.java
-⚙️  [Engine] Window Size: 20 lines | Overlap: 5 lines
-   Processing lines 0-11... ✅ Score: 4/10
+[RAG] Ingesting Company Standards...
+[AI] Connecting to Groq (Llama 3.3)...
+[Engine] Starting analysis for: BadCode.java
+[Engine] Window Size: 20 lines | Overlap: 5 lines
+   Processing lines 0-11...  Score: 4/10
 
 =======================================================
-          🛡️ FINAL AUDIT REPORT: BadCode.java
+             FINAL AUDIT REPORT: BadCode.java
 =======================================================
 Average Cleanliness Score : 4/10
 Chunks Processed          : 1
 Policy Violations Found   : 2
 Boundary Duplicates Purged: 0
 -------------------------------------------------------
-📊 TOKEN EFFICIENCY METRICS (Sliding Window + RAG):
+ TOKEN EFFICIENCY METRICS (Sliding Window + RAG):
    • Monolithic Pipeline Context : ~710 tokens
    • Processed Chunk Context     : ~180 tokens
    • Estimated Token Reduction   : ~35.0% overhead saved
 -------------------------------------------------------
-🔴 POLICY VIOLATIONS:
+ POLICY VIOLATIONS:
    • SECURITY RULE: Found 'System.out.println' on line 4. Use Logger instead.
    • SECURITY RULE: Found 'System.out.println' on line 8. Use Logger instead.
 
-📈 COMPLEXITY & ARCHITECTURAL INSIGHTS:
-   ℹ️ Simple linear execution; low cyclomatic complexity.
+ COMPLEXITY & ARCHITECTURAL INSIGHTS:
+    Simple linear execution; low cyclomatic complexity.
 
-💡 AI OPTIMIZED CODE SUGGESTION:
+ AI OPTIMIZED CODE SUGGESTION:
 -------------------------------------------------------
 import java.util.logging.Logger;
 
@@ -188,5 +188,5 @@ public class BadCode {
 
 ---
 
-## 📄 License
+##  License
 This project is open-source and licensed under the [Apache License 2.0](LICENSE).
