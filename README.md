@@ -3,7 +3,7 @@
 [![Java 21](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 [![LangChain4j](https://img.shields.io/badge/Framework-LangChain4j-blue.svg)](https://github.com/langchain4j/langchain4j)
 [![Architecture](https://img.shields.io/badge/Architecture-RAG-green.svg)](https://en.wikipedia.org/wiki/Retrieval-augmented_generation)
-[![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 An enterprise-grade **Autonomous AI Code Reviewer Agent** built in Java 21. It automates static code compliance against proprietary organizational standards and security policies using a **Retrieval-Augmented Generation (RAG)** architecture.
 
@@ -49,11 +49,12 @@ graph TD
 ```text
 src/main
 ├── java/org/example/reviewer
-│   ├── AgentFactory.java        # Wires Gemini Embeddings, Groq LLM, & RAG Retriver
+│   ├── AgentFactory.java        # Wires Gemini Embeddings, Groq LLM, & RAG Retriever
 │   ├── App.java                 # Main CLI Entry Point & Parameter Resolver
 │   ├── CodeAnalysis.java        # Java Record for Structured AI Output
 │   ├── ConfigLoader.java        # Hierarchical Configuration (Env Var > Properties)
-│   └── SlidingWindowEngine.java # Chunking, Overlap Deduplication, & Token Metrics
+│   ├── SlidingWindowEngine.java # Chunking, Overlap Deduplication, & Token Metrics
+│   └── TokenBenchmarkDemo.java  # Offline mathematical benchmark (35% token reduction)
 └── resources
     ├── application.properties.example # Configuration template
     ├── Standards.txt                  # Baseline coding standards
@@ -125,6 +126,12 @@ You can also pass a custom rules file as the second argument:
 mvn exec:java "-Dexec.mainClass=org.example.reviewer.App" "-Dexec.args=MyService.java custom-rules.txt"
 ```
 
+### 4. Run Offline Token Reduction Benchmark (No API Keys Needed)
+Execute the empirical benchmark demonstrating how sliding-window chunking and RAG rule pruning achieve **~35% token overhead reduction**:
+```bash
+mvn exec:java "-Dexec.mainClass=org.example.reviewer.TokenBenchmarkDemo"
+```
+
 ---
 
 ## 📋 Sample Output
@@ -182,4 +189,4 @@ public class BadCode {
 ---
 
 ## 📄 License
-This project is open-source and licensed under the [MIT License](LICENSE).
+This project is open-source and licensed under the [Apache License 2.0](LICENSE).

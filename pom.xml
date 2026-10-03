@@ -10,6 +10,14 @@
     <name>AI Code Reviewer Agent</name>
     <description>Autonomous static analysis and compliance agent in Java 21 using LangChain4j and RAG</description>
 
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
