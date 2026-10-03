@@ -20,11 +20,11 @@ graph TD
     Source["Target Source Code (.java)"] --> Engine["Sliding Window Engine"]
     Rules["Standards.txt / Custom Rules"] --> RAG["InMemory Vector Store"]
     
-    Engine -->|Window Chunks (0-20, 15-35)| AI["AI Reviewer Agent"]
+    Engine -->|"Window Chunks (0-20, 15-35)"| AI["AI Reviewer Agent"]
     RAG -->|Relevant Context Injection| AI
     
     AI -->|Structured JSON Request| LLM["Groq (Llama 3.3 70B)"]
-    LLM -->|Cleanliness Score, Bugs, Diffs, Complexity| AI
+    LLM -->|"Cleanliness Score, Bugs, Diffs, Complexity"| AI
     AI --> Engine
     
     Engine --> Dedupe["Overlap Deduplicator & Token Tracker"]
