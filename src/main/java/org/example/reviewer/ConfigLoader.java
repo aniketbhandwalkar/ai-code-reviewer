@@ -6,7 +6,8 @@ import java.util.Properties;
 /**
  * Enterprise Configuration Manager.
  * Implements a hierarchical fallback strategy:
- * 1. System Environment Variables (Highest Priority - ideal for CI/CD and Docker)
+ * 1. System Environment Variables (Highest Priority - ideal for CI/CD and
+ * Docker)
  * 2. application.properties (Ideal for local testing)
  * 3. Default Fallbacks
  */
@@ -20,15 +21,18 @@ public class ConfigLoader {
                 properties.load(stream);
             }
         } catch (Exception e) {
-            System.err.println("ℹ️ [Config] Note: Could not load application.properties (" + e.getMessage() + "). Relying on Environment Variables.");
+            System.err.println("[Config] Note: Could not load application.properties (" + e.getMessage()
+                    + "). Relying on Environment Variables.");
         }
     }
 
     /**
-     * Resolves a configuration value by checking environment variables first, then properties.
+     * Resolves a configuration value by checking environment variables first, then
+     * properties.
      *
      * @param envKey       Environment variable name (e.g. GOOGLE_API_KEY)
-     * @param propKey      Property key in application.properties (e.g. google.api.key)
+     * @param propKey      Property key in application.properties (e.g.
+     *                     google.api.key)
      * @param defaultValue Default value if neither is configured
      * @return Resolved configuration string
      */
@@ -54,7 +58,8 @@ public class ConfigLoader {
         if (propValue != null && !propValue.isBlank()) {
             try {
                 return Integer.parseInt(propValue.trim());
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
         return defaultValue;
     }

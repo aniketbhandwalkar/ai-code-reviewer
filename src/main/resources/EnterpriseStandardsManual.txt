@@ -1,0 +1,54 @@
+# ==============================================================================
+# ENTERPRISE SECURE CODING STANDARDS & COMPLIANCE MANUAL v4.2
+# Proprietary Organizational Guidelines (Mandatory for CI/CD Gateways)
+# ==============================================================================
+
+[SECTION 1: APPLICATION SECURITY & SENSITIVE DATA (OWASP ASVS 4.0)]
+RULE 01: [PCI-DSS 3.4 / Critical] Never log raw cardholder data (PAN, CVV, PIN) or PII in cleartext. Cleartext telemetry exposes financial identifiers to centralized log ingestion pipelines. All account identifiers must be masked via DataMasker.mask().
+RULE 02: [OWASP A09 / Mandatory] Never use 'System.out.println' or 'System.err.println' for telemetry. All output must use SLF4J / Logback Logger to support dynamic log levels, standardized formatting, and secure aggregation.
+RULE 03: [CWE-798 / Critical] Prohibit hardcoded secrets, API tokens, passwords, and private keys in source code. All production credentials must resolve via Vault, AWS Secrets Manager, or injected environment variables.
+RULE 04: [OWASP A03 / Critical] Enforce parameterized SQL queries or JPA Criteria. Never concatenate user input into raw SQL or JPQL statements to prevent SQL Injection attacks on financial databases.
+RULE 05: [PCI-DSS 4.1 / Critical] All outbound HTTPS connections must enforce TLS 1.3 with strict hostname verification. Disabling SSL certificate validation or TrustAllManager certificates is strictly prohibited.
+RULE 06: [CWE-78 / Critical] User-supplied parameters for external commands, shells, or ProcessBuilder instances are strictly forbidden due to remote OS command execution vulnerabilities.
+RULE 07: [OWASP A04 / High] Validate and sanitize all external inputs using strict allow-lists and Jakarta Bean Validation (@Pattern, @Size, @NotNull) before passing payloads to downstream domain logic.
+RULE 08: [OWASP A05 / High] XML and JSON document parsers must explicitly disable external general entities (XXE prevention). Document builders must deactivate DTD resolution and schema expansion.
+
+[SECTION 2: CODE QUALITY, CLEAN CODE & JAVA 21 IDIOMS]
+RULE 09: [Complexity / Quality] Method length must not exceed 60 lines of business logic. Monolithic methods with high cyclomatic complexity must be decomposed into focused, single-responsibility private helper methods.
+RULE 10: [Style / Convention] Variable, parameter, and field names must adhere to snake_case naming conventions (e.g., transaction_id, user_auth_token). CamelCase is reserved exclusively for class and method identifiers.
+RULE 11: [Clean Architecture] Classes must avoid public or package-private mutable fields. Encapsulate state using private final fields, accessor methods, or immutable Java records.
+RULE 12: [Resilience / Quality] Do not catch generic 'Exception' or 'Throwable' in business methods unless immediately rethrowing. Catch specific checked exceptions to prevent suppressing unexpected runtime errors.
+RULE 13: [CWE-391 / Quality] Never swallow exceptions with empty or unlogged catch blocks. Always log the complete stack trace and wrap the failure in an appropriate enterprise domain exception.
+RULE 14: [Java 21 Modernization] Use modern Java 21 Pattern Matching for switch and instanceof instead of legacy cascading if-else type checks when branching on polymorphic types.
+RULE 15: [Java 21 Modernization] Prefer immutable Java records (record) over mutable DTOs with boilerplate getters, setters, equals, and hashCode for financial data transfer objects.
+RULE 16: [Deprecation Policy] Deprecated standard library API usage is strictly forbidden in new pull requests. Modern standard library alternatives must be adopted immediately.
+
+[SECTION 3: MEMORY ALLOCATION & PERFORMANCE OPTIMIZATION]
+RULE 17: [Memory Optimization] String concatenation in loops or multi-step message builders must use StringBuilder; do not use the '+' operator which allocates excessive intermediate String objects on the heap.
+RULE 18: [GC / Capacity] Specify initial capacity when instantiating ArrayList, HashMap, or StringBuilder if expected size is known, eliminating wasteful array resizing and garbage collection thrashing.
+RULE 19: [CPU Optimization] Avoid excessive autoboxing and unboxing inside hot calculation loops. Use primitive specialized streams (IntStream, LongStream, DoubleStream) for high-frequency computations.
+RULE 20: [Concurrency / Perf] Reusable heavy objects (such as SimpleDateFormat, ObjectMapper, and regex Pattern compilers) must be declared static final or managed as thread-safe singletons.
+RULE 21: [Database / Heap] Database result sets must use streaming cursor pagination; loading unbounded result sets directly into application heap memory causes OutOfMemoryError crashes.
+RULE 22: [Lock Contention] Minimize lock contention: prefer ConcurrentHashMap over synchronized Collections or synchronized method blocks in multi-threaded payment flows.
+RULE 23: [Resource Management] Close all I/O streams, database sockets, prepared statements, and HTTP clients using try-with-resources blocks to prevent operating system file descriptor leaks.
+RULE 24: [Logging Efficiency] Use lazy initialization or Suppliers for expensive log formatting messages to avoid premature string allocations when debug logging is disabled.
+
+[SECTION 4: CONCURRENCY, THREAD-SAFETY & RESILIENCE]
+RULE 25: [Thread Safety] All shared singleton service classes managed by application containers must be strictly stateless and thread-safe under concurrent load.
+RULE 26: [Concurrency] Avoid creating unmanaged raw Thread instances with 'new Thread()'. Always use ManagedExecutorService or Java 21 Virtual Thread Executors for asynchronous tasks.
+RULE 27: [Timeout Enforcement] Background asynchronous tasks must enforce explicit timeouts (CompletableFuture.orTimeout) to prevent thread exhaustion and hanging tasks.
+RULE 28: [Thread Blocking] Never invoke Thread.sleep() inside web request handlers or synchronized blocks, as it starves connection pools and causes request timeouts.
+RULE 29: [Atomic State] Use Atomic variables (AtomicInteger, AtomicReference) or LongAdder for high-contention shared counters instead of raw primitive integer increments.
+RULE 30: [Idempotency] All distributed database transactions across payment microservices must include idempotent transaction tokens to prevent duplicate payment authorizations.
+RULE 31: [Fault Tolerance] Enforce Circuit Breaker and Retry policies (Resilience4j) on all external HTTP payment gateway integrations to prevent cascading microservice outages.
+RULE 32: [Double-Checked Locking] Do not implement double-checked locking patterns without declaring the target instance field as 'volatile' to prevent instruction reordering bugs.
+
+[SECTION 5: ARCHITECTURAL COMPLIANCE & API DESIGN]
+RULE 33: [Layering Architecture] REST Controllers must remain thin; embedding business calculations, database queries, or external HTTP calls inside controller classes is prohibited.
+RULE 34: [Hexagonal Design] Domain services must not directly depend on infrastructure repositories without abstraction interfaces, ensuring decoupling of business logic from database vendors.
+RULE 35: [Financial Accuracy] Financial amounts must always use BigDecimal with explicit RoundingMode (RoundingMode.HALF_UP). Never use primitive float or double for currency due to precision loss.
+RULE 36: [API Consistency] All distributed HTTP REST responses must return standardized EnterpriseResponse envelopes containing request correlation IDs and timestamp metadata.
+RULE 37: [Cryptographic Integrity] Incoming webhook callbacks must verify cryptographic HMAC signatures before deserializing or processing payloads to prevent forged requests.
+RULE 38: [Date/Time Standards] Time and date operations must use java.time (Instant, ZonedDateTime, UTC). Legacy java.util.Date and Calendar are banned across enterprise repositories.
+RULE 39: [Graceful Degradation] Microservice clients must provide fallback implementations for graceful degradation during third-party banking network outages.
+RULE 40: [Regulatory Audit] Audit logging: every state-changing financial transaction must emit an immutable audit event to the compliance message queue for SOX compliance.

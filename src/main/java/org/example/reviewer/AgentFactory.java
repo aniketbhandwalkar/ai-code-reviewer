@@ -16,7 +16,6 @@ import dev.langchain4j.service.V;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,9 +32,11 @@ public class AgentFactory {
     public static CodeReviewer createReviewer(String googleKey, String groqKey, String standards) {
 
         // 1. Setup RAG (Using Google Embeddings)
+        String embeddingModelName = ConfigLoader.get("GOOGLE_EMBEDDING_MODEL", "google.embedding.model",
+                "gemini-embedding-001");
         EmbeddingModel embeddingModel = GoogleAiEmbeddingModel.builder()
                 .apiKey(googleKey)
-                .modelName("text-embedding-004")
+                .modelName(embeddingModelName)
                 .timeout(Duration.ofSeconds(60))
                 .build();
 
@@ -45,7 +46,7 @@ public class AgentFactory {
         try {
             Path path = Paths.get(standards);
             if (Files.exists(path)) {
-                System.out.println("📚 [RAG] Ingesting Company Standards...");
+                System.out.println("[RAG] Ingesting Company Standards...");
                 Document doc = FileSystemDocumentLoader.loadDocument(
                         path, new TextDocumentParser());
 
@@ -56,7 +57,7 @@ public class AgentFactory {
                         .ingest(doc);
             }
         } catch (Exception e) {
-            System.err.println("⚠️ [RAG] Warning: Could not load standards.");
+            System.err.println("[RAG] Warning: Could not load standards: " + e.getMessage());
         }
 
         ContentRetriever retriever = EmbeddingStoreContentRetriever.builder()
@@ -66,12 +67,14 @@ public class AgentFactory {
                 .minScore(0.5)
                 .build();
 
-        // 3. Setup Chat Model (Using Groq/Llama)
-        System.out.println("🤖 [AI] Connecting to Groq (Llama 3.3)...");
+        // 3. Setup Chat Model (Using Groq)
+        String chatModelName = ConfigLoader.get("GROQ_MODEL", "groq.chat.model", "openai/gpt-oss-120b");
+        System.out.println("[AI] Connecting to Groq (" + chatModelName + ")...");
         ChatLanguageModel chatModel = OpenAiChatModel.builder()
                 .baseUrl("https://api.groq.com/openai/v1")
                 .apiKey(groqKey)
-                .modelName("llama-3.3-70b-versatile")
+                .modelName(chatModelName)
+                .maxRetries(1)
                 .timeout(Duration.ofSeconds(90))
                 .build();
 

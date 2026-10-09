@@ -10,7 +10,7 @@ public class App {
 
     public static void main(String[] args) {
         System.out.println("=======================================================");
-        System.out.println(" 🛡️  AI Code Reviewer - Enterprise Compliance Agent");
+        System.out.println(" AI Code Reviewer - Enterprise Compliance Agent");
         System.out.println("=======================================================");
 
         // 1. Resolve API Keys (Env Vars > application.properties)
@@ -37,9 +37,11 @@ public class App {
             var engine = new SlidingWindowEngine(reviewer);
 
             engine.analyzeFile(targetFile);
+            System.exit(0);
         } catch (Exception e) {
-            System.err.println("❌ Critical Error during execution: " + e.getMessage());
+            System.err.println("Critical Error during execution: " + e.getMessage());
             e.printStackTrace();
+            System.exit(1);
         }
     }
 
@@ -53,14 +55,14 @@ public class App {
             if (Files.exists(cliPath)) {
                 return cliPath;
             } else {
-                System.err.println("⚠️ Specified target file not found: " + cliPath.toAbsolutePath());
+                System.err.println("Specified target file not found: " + cliPath.toAbsolutePath());
                 System.err.println("Falling back to bundled sample: BadCode.java\n");
             }
         }
 
         URL codeUrl = App.class.getClassLoader().getResource("BadCode.java");
         if (codeUrl == null) {
-            System.err.println("❌ Error: Sample BadCode.java not found in resources!");
+            System.err.println("Error: Sample BadCode.java not found in resources!");
             return null;
         }
         try {
@@ -83,26 +85,13 @@ public class App {
         if (resourceUrl != null) {
             try {
                 return Paths.get(resourceUrl.toURI()).toString();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
         return rulesResource;
     }
 
     private static void printMissingKeyInstructions() {
-        System.err.println("""
-            ❌ Missing API Keys!
-            -------------------------------------------------------
-            Please provide valid API keys via one of these two ways:
-            
-            1. System Environment Variables:
-               • GOOGLE_API_KEY (from https://aistudio.google.com/)
-               • GROQ_API_KEY   (from https://console.groq.com/)
-               
-            2. Local Configuration File:
-               Edit: src/main/resources/application.properties
-               google.api.key=YOUR_KEY_HERE
-               groq.api.key=YOUR_KEY_HERE
-            -------------------------------------------------------
-            """);
+        System.err.println("Missing API Keys!");
     }
 }

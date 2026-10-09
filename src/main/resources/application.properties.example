@@ -1,16 +1,17 @@
-# ========================================================
-# AI Code Reviewer - Application Configuration
-# ========================================================
+# Google Gemini API Key (For Vector Embeddings)
+google.api.key=YOUR_GEMINI_API_KEY_HERE
 
-# LLM Provider API Keys (Leave empty to use System Environment Variables)
-# - Google Gemini: Used for RAG Text Embeddings (text-embedding-004)
-# - Groq: Used for High-Speed Llama 3.3 70B Code Analysis Inference
-google.api.key=
-groq.api.key=
+# Groq API Key (For Llama 3.3 70B Fast Inference)
+groq.api.key=YOUR_GROQ_API_KEY_HERE
 
-# Sliding Window Engine Settings
+# Model Configuration
+google.embedding.model=gemini-embedding-001
+groq.chat.model=openai/gpt-oss-120b
+
+# Sliding Window Engine Settings (Auto-adapts window size based on file scale)
+sliding.window.adaptive=true
 sliding.window.size=20
 sliding.window.overlap=5
 
-# Default Coding Standards & Rules File (ClassPath resource or absolute path)
-default.rules.file=Standards.txt
+# Default Coding Standards & Rules File
+default.rules.file=EnterpriseStandardsManual.txt
