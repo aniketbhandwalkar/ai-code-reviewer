@@ -6,6 +6,8 @@ target/
 src/main/java/org/example/reviewer/NetworkConfig.java
 src/main/resources/application.properties
 .env
+*.pdf
+Aniket_Resume.pdf
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

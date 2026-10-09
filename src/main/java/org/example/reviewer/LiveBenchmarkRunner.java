@@ -64,7 +64,7 @@ public class LiveBenchmarkRunner {
         // 3. Setup Models
         String embeddingModelName = ConfigLoader.get("GOOGLE_EMBEDDING_MODEL", "google.embedding.model",
                 "gemini-embedding-001");
-        String chatModelName = ConfigLoader.get("GROQ_MODEL", "groq.chat.model", "openai/gpt-oss-120b");
+        String chatModelName = ConfigLoader.get("GROQ_MODEL", "groq.chat.model", "llama-3.3-70b-versatile");
 
         System.out.println("  Initializing AI Models...");
         System.out.println("   - Vector Embeddings Model : Google Gemini (" + embeddingModelName + ")");

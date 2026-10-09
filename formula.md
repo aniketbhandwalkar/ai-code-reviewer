@@ -23,12 +23,12 @@ Overlap_Size = (Window_Size >= N) ? 0 : Max( 3,  Floor( Window_Size * 0.18 ) )
 
 ## 1. The Core Mathematical Model
 
-For any source file containing $N$ lines of code ($N \in \mathbb{N}^+$), the segmentation engine determines the dynamic window size $W(N)$ and proportional overlap $\operatorname{Overlap}(N)$ using a continuous sub-linear scaling function:
+For any source file containing $N$ lines of code ($N \in \mathbb{N}^+$), the segmentation engine determines the dynamic window size $W(N)$ and proportional overlap $\text{Overlap}(N)$ using a continuous sub-linear scaling function:
 
 $$
 \begin{aligned}
-W(N) &= \min\Big(N, \; \operatorname{clamp}\big(\lfloor W_{\text{base}} + \alpha \sqrt{N}\rfloor, \; W_{\min}, \; W_{\max}\big)\Big) \\[12pt]
-\operatorname{Overlap}(N) &= \begin{cases} 
+W(N) &= \min\Big(N, \; \text{clamp}\big(\lfloor W_{\text{base}} + \alpha \sqrt{N}\rfloor, \; W_{\min}, \; W_{\max}\big)\Big) \\[12pt]
+\text{Overlap}(N) &= \begin{cases} 
 0, & \text{if } W(N) \ge N \\[8pt]
 \max\big(3, \; \lfloor W(N) \cdot \rho \rfloor\big), & \text{if } W(N) < N 
 \end{cases}
@@ -39,7 +39,7 @@ $$
 The clamping operator enforces strict operational boundaries against semantic fragmentation and context dilution:
 
 $$
-\operatorname{clamp}(x, W_{\min}, W_{\max}) = \max\Big(W_{\min}, \; \min\big(x, W_{\max}\big)\Big)
+\text{clamp}(x, W_{\min}, W_{\max}) = \max\Big(W_{\min}, \; \min\big(x, W_{\max}\big)\Big)
 $$
 
 ---
@@ -49,7 +49,7 @@ $$
 | Symbol | Constant | Technical Name | Algorithmic Definition & Role |
 | :---: | :---: | :--- | :--- |
 | **$N$** | Variable | Total Lines of Code (LOC) | Input dimension of the target source file. |
-| **$\alpha$** | `3.5` | **Growth Scaling Factor** | Controls the expansion rate of the window relative to $\sqrt{N}$. Derived from Java Abstract Syntax Tree (AST) node density. |
+| **$\alpha$** | `3.5` | **Growth Scaling Factor** | Controls the expansion rate of the window relative to $\sqrt{N}$. Calibrated to match typical Java method scope boundaries (~15-30 LOC). |
 | **$\rho$** | `0.18` ($18\%$) | **Proportional Overlap Ratio** | Determines the percentage of prior window lines retained in the subsequent window to preserve syntactical continuity. |
 | **$W_{\text{base}}$** | `20` lines | **Baseline Cognitive Window** | The minimum syntactic envelope needed to capture class signature, package structure, and method declarations. |
 | **$W_{\min}$** | `20` lines | **Lower Floor Boundary** | Prevents micro-fragmentation where windows are too small to understand variable scopes. |
@@ -81,7 +81,7 @@ $$\Delta W \propto \alpha \cdot \frac{1}{2\sqrt{N}} \, \Delta N$$
 
 $\rho$ is the **boundary margin overlap ratio**. It dictates how many lines overlap between consecutive windows:
 
-$$\text{Step Size } S(N) = W(N) - \operatorname{Overlap}(N) = W(N) \cdot (1 - \rho)$$
+$$\text{Step Size } S(N) = W(N) - \text{Overlap}(N) = W(N) \cdot (1 - \rho)$$
 
 ### Why Do We Need Overlap?
 Code is not independent text. If a window boundary cuts through:
@@ -129,7 +129,7 @@ We clamp $W_{\text{raw}}$ using three mathematical constraints:
 - If a file has $N = 12$ lines, $W_{\text{raw}} = 20 + 3.5\sqrt{12} \approx 32$.
 - You cannot read 32 lines from a 12-line file.
 - The outer $\min(N, \dots)$ ensures $W(12) = 12$.
-- When $W(N) \ge N$, $\operatorname{Overlap}(N) = 0$. The file is analyzed in **exactly 1 single window with 0 duplicate tokens**.
+- When $W(N) \ge N$, $\text{Overlap}(N) = 0$. The file is analyzed in **exactly 1 single window with 0 duplicate tokens**.
 
 ### 2. The Lower Floor: $W_{\min} = 20$
 - An LLM analyzing 5 lines of code has zero contextual awareness of class-level imports, injected Spring dependencies, or logger declarations.
@@ -143,7 +143,7 @@ We clamp $W_{\text{raw}}$ using three mathematical constraints:
 
 ## 7. Numerical Verification Across Common Code Scales
 
-| File Profile | LOC ($N$) | Raw Calculation ($20 + 3.5\sqrt{N}$) | Clamped Window $W(N)$ | Overlap $\operatorname{Overlap}(N)$ | Step Size | Total Windows | Duplicate Token Overhead |
+| File Profile | LOC ($N$) | Raw Calculation ($20 + 3.5\sqrt{N}$) | Clamped Window $W(N)$ | Overlap $\text{Overlap}(N)$ | Step Size | Total Windows | Duplicate Token Overhead |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Micro snippet** | `10` | $31.06$ | **10** (snapped to $N$) | **0** | `10` | **1** | **0%** |
 | **Small Utility** | `50` | $44.74$ | **44** | **7** | `37` | **2** | **15.9%** |

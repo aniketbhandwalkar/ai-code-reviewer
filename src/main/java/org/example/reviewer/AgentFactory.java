@@ -68,7 +68,7 @@ public class AgentFactory {
                 .build();
 
         // 3. Setup Chat Model (Using Groq)
-        String chatModelName = ConfigLoader.get("GROQ_MODEL", "groq.chat.model", "openai/gpt-oss-120b");
+        String chatModelName = ConfigLoader.get("GROQ_MODEL", "groq.chat.model", "llama-3.3-70b-versatile");
         System.out.println("[AI] Connecting to Groq (" + chatModelName + ")...");
         ChatLanguageModel chatModel = OpenAiChatModel.builder()
                 .baseUrl("https://api.groq.com/openai/v1")

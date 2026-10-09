@@ -6,7 +6,7 @@ groq.api.key=YOUR_GROQ_API_KEY_HERE
 
 # Model Configuration
 google.embedding.model=gemini-embedding-001
-groq.chat.model=openai/gpt-oss-120b
+groq.chat.model=llama-3.3-70b-versatile
 
 # Sliding Window Engine Settings (Auto-adapts window size based on file scale)
 sliding.window.adaptive=true

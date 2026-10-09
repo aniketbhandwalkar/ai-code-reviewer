@@ -2,12 +2,13 @@
 
 [![Java 21](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 [![LangChain4j](https://img.shields.io/badge/Framework-LangChain4j-blue.svg)](https://github.com/langchain4j/langchain4j)
+[![Build](https://github.com/aniketbhandwalkar/ai-code-reviewer/actions/workflows/ci.yml/badge.svg)](https://github.com/aniketbhandwalkar/ai-code-reviewer/actions)
 [![Architecture](https://img.shields.io/badge/Architecture-RAG-green.svg)](https://en.wikipedia.org/wiki/Retrieval-augmented_generation)
 [![Model](https://img.shields.io/badge/Inference-Groq_(Llama_3.3_70B)-purple.svg)](https://groq.com/)
 [![Embeddings](https://img.shields.io/badge/Vector_DB-Google_Gemini-blue.svg)](https://aistudio.google.com/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-An enterprise-grade **Autonomous AI Code Reviewer & Compliance Agent** engineered in Java 21. It automates static code compliance against proprietary organizational standards and security policies (OWASP Top 10, PCI-DSS 3.4, Clean Architecture) using an **Adaptive Sub-Linear Sliding Window Engine** and **Retrieval-Augmented Generation (RAG)**.
+An autonomous **AI Code Reviewer & Compliance Agent** engineered in Java 21. It automates static code compliance against organizational coding standards and security policies (OWASP Top 10, PCI-DSS 3.4, Clean Code) using an **Adaptive Sub-Linear Sliding Window Engine** and **Retrieval-Augmented Generation (RAG)**.
 
 Designed to process monolithic codebases without exceeding LLM context windows or rate limits, it features mathematical continuous window scaling, cross-boundary issue deduplication, and a hybrid inference pipeline (**Google Gemini Embeddings + Groq Llama 3.3 70B**).
 
@@ -47,8 +48,8 @@ For any source file containing $N$ lines of code ($N \in \mathbb{N}^+$):
 
 $$
 \begin{aligned}
-W(N) &= \min\Big(N, \; \operatorname{clamp}\big(\lfloor 20 + 3.5 \sqrt{N}\rfloor, \; 20, \; 100\big)\Big) \\[10pt]
-\operatorname{Overlap}(N) &= \begin{cases} 
+W(N) &= \min\Big(N, \; \text{clamp}\big(\lfloor 20 + 3.5 \sqrt{N}\rfloor, \; 20, \; 100\big)\Big) \\[10pt]
+\text{Overlap}(N) &= \begin{cases} 
 0, & \text{if } W(N) \ge N \\[6pt]
 \max\big(3, \; \lfloor W(N) \times 0.18 \rfloor\big), & \text{if } W(N) < N 
 \end{cases}
@@ -69,7 +70,7 @@ Overlap_Size = (Window_Size >= N) ? 0 : Max( 3,  Floor( Window_Size * 0.18 ) )
 | :---: | :---: | :--- |
 | **$N$** | Variable | Total Lines of Code (LOC) in target file. |
 | **$W_{\text{base}}$** | `20` lines | Baseline cognitive context required to preserve class headers, imports, and method declarations. |
-| **$\alpha$** | `3.5` | Sub-linear growth coefficient derived from Java Abstract Syntax Tree (AST) node density per method. |
+| **$\alpha$** | `3.5` | Growth coefficient calibrated for Java method granularity (~15-30 LOC) to capture 2-3 cohesive methods per window. |
 | **$W_{\min}$** | `20` lines | Lower floor preventing micro-fragmentation and scope loss. |
 | **$W_{\max}$** | `100` lines | Upper safety ceiling preventing LLM attention dilution ("Lost-in-the-Middle") and Groq 8,000 TPM rate limit exhaustion. |
 | **$\rho$** | `0.18` (18%) | Proportional overlap preserving multi-line annotations, try-catch blocks, and builder pattern chains without exceeding 20% token overhead. |
@@ -78,18 +79,17 @@ Overlap_Size = (Window_Size >= N) ? 0 : Max( 3,  Floor( Window_Size * 0.18 ) )
 
 ---
 
-## Empirical Token Reduction Proof (35% Savings)
+## Empirical Token Reduction Proof (35% Modeled Savings)
 
 In enterprise code review, an organizational rulebook contains 40+ compliance rules (~2,100 tokens). Traditional whole-file ingestion stuffs the entire rulebook and whole file into every call:
 
 * **Naive Monolithic Ingestion:** Sends 380 lines of code + all 40 compliance rules (2,100 tokens) + system prompt = **5,500 prompt tokens**.
-* **Sliding Window + RAG Architecture:** Segments into 7 active windows with AST boilerplate pruning. RAG dynamically retrieves only the **top-2 applicable rules (~120 tokens)** per window = **3,575 total prompt tokens**.
+* **Sliding Window + RAG Architecture:** Segments into 7 active windows with boilerplate pruning. RAG dynamically retrieves only the **top-2 applicable rules (~120 tokens)** per window = **3,575 total prompt tokens**.
 
 $$\text{Tokens Saved} = 5,500 - 3,575 = \mathbf{1,925 \text{ tokens}}$$
 $$\mathbf{\text{Token Overhead Reduction}} = \frac{1,925}{5,500} \times 100 = \mathbf{35.0\%}$$
 
-* **Bonus — Chunking Without RAG vs. With RAG:** Sending all 40 rules per window consumes **13,750 tokens**. Our RAG pipeline uses **3,651 tokens**—achieving a **74% token reduction**.
-* **Peak Context Window Footprint:** Reduces single-request prompt size from **4,052 tokens to ~800 tokens** (**85% reduction**), preventing TPM rate-limiting.
+> **Evaluation Methodology:** The 35% figure represents an analytical benchmark on a 380-LOC service comparing monolithic whole-file ingestion against windowed RAG retrieval. In live empirical testing across real APIs (via `live-benchmark.bat`), measured reductions range from ~10% on smaller monoliths up to **74%** when compared to windowed processing without RAG. Additionally, single-request peak prompt memory is reduced from **4,052 tokens to ~800 tokens (85% reduction)**.
 
 ---
 
@@ -103,20 +103,23 @@ E:\Code_Reviewer
 ├── token-benchmark.bat                   # Offline 35% token reduction benchmark proof
 ├── live-benchmark.bat                    # Live empirical test against Google Gemini & Groq
 └── src
-    └── main
-        ├── java/org/example/reviewer
-        │   ├── AgentFactory.java         # Wires Gemini Embeddings, Groq LLM, & RAG Retriever
-        │   ├── App.java                  # Main CLI Entry Point & Parameter Resolver
-        │   ├── CodeAnalysis.java         # Java 21 Record for Structured AI Audit Output
-        │   ├── ConfigLoader.java         # Hierarchical Configuration (Env Var > Properties)
-        │   ├── SlidingWindowEngine.java  # Sub-Linear Chunking, Overlap Deduplication, Token Math
-        │   ├── LiveBenchmarkRunner.java  # Real API Empirical Benchmark (Gemini + Groq)
-        │   └── TokenBenchmarkDemo.java   # Offline Mathematical Benchmark (35% Proof)
-        └── resources
-            ├── application.properties    # Model & API Key Configuration
-            ├── EnterpriseStandardsManual.txt # 40 Enterprise Rules (OWASP, PCI-DSS, Clean Code)
-            ├── MonolithicPaymentGatewayService.java # 294-line monolithic test class
-            └── BadCode.java              # Sample snippet for quick smoke testing
+    ├── main
+    │   ├── java/org/example/reviewer
+    │   │   ├── AgentFactory.java         # Wires Gemini Embeddings, Groq LLM, & RAG Retriever
+    │   │   ├── App.java                  # Main CLI Entry Point & Parameter Resolver
+    │   │   ├── CodeAnalysis.java         # Java 21 Record for Structured AI Audit Output
+    │   │   ├── ConfigLoader.java         # Hierarchical Configuration (Env Var > Properties)
+    │   │   ├── SlidingWindowEngine.java  # Sub-Linear Chunking, Overlap Deduplication, Token Math
+    │   │   ├── LiveBenchmarkRunner.java  # Real API Empirical Benchmark (Gemini + Groq)
+    │   │   └── TokenBenchmarkDemo.java   # Offline Mathematical Benchmark (35% Proof)
+    │   └── resources
+    │       ├── application.properties.example # Safe Configuration Template
+    │       ├── EnterpriseStandardsManual.txt # 40 Enterprise Rules (OWASP, PCI-DSS, Clean Code)
+    │       ├── MonolithicPaymentGatewayService.java # 294-line monolithic test class
+    │       └── BadCode.java              # Sample snippet for quick smoke testing
+    └── test
+        └── java/org/example/reviewer
+            └── SlidingWindowEngineTest.java # 22 JUnit 5 Unit Tests (Bounds, Clamping, Invariants)
 ```
 
 ---
@@ -138,7 +141,7 @@ groq.api.key=your-groq-api-key
 
 # Model Configuration
 google.embedding.model=gemini-embedding-001
-groq.chat.model=openai/gpt-oss-120b
+groq.chat.model=llama-3.3-70b-versatile
 
 # Adaptive Sizing
 sliding.window.adaptive=true
@@ -173,6 +176,12 @@ Executes a live side-by-side run of Naive Monolithic Ingestion vs. Sliding Windo
 .\live-benchmark.bat
 ```
 
+### 5. Run Automated Unit Tests (JUnit 5)
+Executes all 22 automated test cases verifying window bounds, clamping, overlap invariant, and step progression:
+```powershell
+mvn test
+```
+
 ---
 
 ## Sample Audit Report
@@ -181,7 +190,7 @@ Executes a live side-by-side run of Naive Monolithic Ingestion vs. Sliding Windo
 =======================================================
           FINAL AUDIT REPORT: BadCode.java
 =======================================================
-Average Cleanliness Score : 80/10
+Average Cleanliness Score : 8/10
 Chunks Processed          : 1
 Policy Violations Found   : 2
 Boundary Duplicates Purged: 0

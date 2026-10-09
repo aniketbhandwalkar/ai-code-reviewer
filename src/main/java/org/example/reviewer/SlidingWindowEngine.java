@@ -105,8 +105,10 @@ public class SlidingWindowEngine {
             try {
                 // Call AI Agent with automatic retry on rate limits
                 CodeAnalysis result = callReviewerWithRetry(chunk);
-
-                System.out.println("Score: " + result.cleanlinessScore() + "/10");
+                int chunkScore = result.cleanlinessScore() > 10 
+                        ? Math.round(result.cleanlinessScore() / 10.0f) 
+                        : result.cleanlinessScore();
+                System.out.println("Score: " + chunkScore + "/10");
 
                 // Process bugs with Overlap Deduplication
                 if (result.detectedBugs() != null) {
@@ -233,7 +235,8 @@ public class SlidingWindowEngine {
             double tokenReductionPercent,
             List<String> complexityInsights,
             List<String> suggestedFixes) {
-        int avgScore = chunks > 0 ? (totalScore / chunks) : 0;
+        int rawAvg = chunks > 0 ? (totalScore / chunks) : 0;
+        int avgScore = rawAvg > 10 ? Math.round(rawAvg / 10.0f) : rawAvg;
 
         System.out.println("\n=======================================================");
         System.out.println("          FINAL AUDIT REPORT: " + fileName);
